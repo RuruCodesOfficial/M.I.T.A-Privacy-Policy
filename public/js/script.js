@@ -581,3 +581,45 @@ document.addEventListener("click", (e) => {
 document.getElementById("mobileMenu")?.addEventListener("click", (e) => {
   e.stopPropagation();
 });
+// Hide loader after page load
+window.addEventListener("load", () => {
+  const loader = document.getElementById("loader");
+  if (loader) loader.style.display = "none";
+});
+
+// Background music autoplay with fallback
+document.addEventListener("DOMContentLoaded", () => {
+  const audio = document.getElementById("bg-music");
+  if (!audio) return;
+  audio.volume = 0.5;
+
+  const tryPlay = () => {
+    audio.play().catch(() => {});
+    document.removeEventListener("click", tryPlay);
+    document.removeEventListener("scroll", tryPlay);
+  };
+
+  // Try immediately
+  audio.play().catch(() => {
+    // If blocked, wait for interaction
+    document.addEventListener("click", tryPlay);
+    document.addEventListener("scroll", tryPlay);
+  });
+});
+
+// Touch / click effect with random colors
+document.addEventListener("click", (e) => {
+  const effect = document.createElement("div");
+  effect.className = "touch-effect";
+  effect.style.left = e.pageX - 10 + "px";
+  effect.style.top = e.pageY - 10 + "px";
+  effect.style.position = "absolute";
+  effect.style.width = "20px";
+  effect.style.height = "20px";
+  effect.style.borderRadius = "50%";
+  effect.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
+  effect.style.pointerEvents = "none";
+  effect.style.animation = "pop 0.6s ease-out forwards";
+  document.body.appendChild(effect);
+  setTimeout(() => effect.remove(), 600);
+});
