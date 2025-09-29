@@ -766,6 +766,153 @@
                 botLogo.style.display = 'none';
                 botName.textContent = CONFIG.botEmoji + ' ' + CONFIG.botName;
             }
+
+            // Fruit Ninja style swipe effects
+function initializeNinjaSwipes() {
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let trailPoints = [];
+    
+    const createNinjaTrail = (x1, y1, x2, y2) => {
+        const trail = document.createElement('div');
+        trail.className = 'ninja-trail';
+        
+        const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+        
+        trail.style.background = CONFIG.ninjaSwipeGradient;
+        trail.style.width = length + 'px';
+        trail.style.height = CONFIG.ninjaSwipeWidth + 'px';
+        trail.style.left = x1 + 'px';
+        trail.style.top = y1 - (CONFIG.ninjaSwipeWidth / 2) + 'px';
+        trail.style.transformOrigin = '0 center';
+        trail.style.transform = `rotate(${angle}deg)`;
+        trail.style.opacity = CONFIG.ninjaSwipeOpacity;
+        trail.style.position = 'fixed';
+        trail.style.pointerEvents = 'none';
+        trail.style.zIndex = '9999';
+        trail.style.borderRadius = '50px';
+        trail.style.boxShadow = `0 0 ${CONFIG.ninjaSwipeWidth * 2}px rgba(255, 107, 53, 0.5)`;
+        
+        document.body.appendChild(trail);
+        
+        setTimeout(() => {
+            if (trail.parentNode) {
+                trail.parentNode.removeChild(trail);
+            }
+        }, 800);
+    };
+    
+    const createSparks = (x, y) => {
+        for (let i = 0; i < 8; i++) {
+            const spark = document.createElement('div');
+            spark.style.position = 'fixed';
+            spark.style.pointerEvents = 'none';
+            spark.style.zIndex = '10000';
+            spark.style.width = '4px';
+            spark.style.height = '4px';
+            spark.style.background = 'radial-gradient(circle, #ffcc02, #ff6b35)';
+            spark.style.borderRadius = '50%';
+            spark.style.left = x + 'px';
+            spark.style.top = y + 'px';
+            
+            const randomX = (Math.random() - 0.5) * 60;
+            const randomY = (Math.random() - 0.5) * 60;
+            const randomRotation = Math.random() * 360;
+            
+            spark.style.transition = 'all 1s ease-out';
+            
+            document.body.appendChild(spark);
+            
+            setTimeout(() => {
+                spark.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg) scale(0.2)`;
+                spark.style.opacity = '0';
+            }, 10);
+            
+            setTimeout(() => {
+                if (spark.parentNode) {
+                    spark.parentNode.removeChild(spark);
+                }
+            }, 1000);
+        }
+    };
+    
+    // Mouse events
+    document.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        trailPoints = [];
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+        
+        const currentX = e.clientX;
+        const currentY = e.clientY;
+        const distance = Math.sqrt((currentX - lastX) ** 2 + (currentY - lastY) ** 2);
+        
+        if (distance > 10) {
+            createNinjaTrail(lastX, lastY, currentX, currentY);
+            
+            if (Math.random() > 0.8) {
+                createSparks(currentX, currentY);
+            }
+            
+            trailPoints.push({ x: currentX, y: currentY });
+            lastX = currentX;
+            lastY = currentY;
+        }
+    });
+    
+    document.addEventListener('mouseup', (e) => {
+        if (isDrawing && trailPoints.length > 3) {
+            createSparks(e.clientX, e.clientY);
+        }
+        isDrawing = false;
+    });
+    
+    // Touch events
+    document.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+            isDrawing = true;
+            const touch = e.touches[0];
+            lastX = touch.clientX;
+            lastY = touch.clientY;
+            trailPoints = [];
+        }
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+        if (!isDrawing || e.touches.length !== 1) return;
+        
+        const touch = e.touches[0];
+        const currentX = touch.clientX;
+        const currentY = touch.clientY;
+        const distance = Math.sqrt((currentX - lastX) ** 2 + (currentY - lastY) ** 2);
+        
+        if (distance > 8) {
+            createNinjaTrail(lastX, lastY, currentX, currentY);
+            
+            if (Math.random() > 0.7) {
+                createSparks(currentX, currentY);
+            }
+            
+            trailPoints.push({ x: currentX, y: currentY });
+            lastX = currentX;
+            lastY = currentY;
+        }
+    });
+    
+    document.addEventListener('touchend', (e) => {
+        if (isDrawing && trailPoints.length > 2) {
+            const touch = e.changedTouches[0];
+            createSparks(touch.clientX, touch.clientY);
+        }
+        isDrawing = false;
+    });
+}
             
             // Navigation
             document.getElementById('nav-home').textContent = CONFIG.navigation.home;
